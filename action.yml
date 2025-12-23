@@ -1,0 +1,46 @@
+name: "Package Skills"
+description: "Creates distributable .zip files from skill directories for Claude.ai and compatible clients"
+branding:
+  icon: "package"
+  color: "purple"
+
+inputs:
+  skill-paths:
+    description: "Newline-separated list of skill directory paths (e.g., from paths-filter)"
+    required: false
+  skills-dir:
+    description: "Root directory to scan for skills (used if skill-paths not provided)"
+    required: false
+    default: "skills"
+  output-dir:
+    description: "Directory for output .zip files and manifest"
+    required: false
+    default: "dist"
+  validate-only:
+    description: "Only validate skills, do not package"
+    required: false
+    default: "false"
+
+outputs:
+  packages:
+    description: "JSON array of packaged skills with metadata"
+    value: ${{ steps.package.outputs.packages }}
+  manifest:
+    description: "Path to generated manifest.json"
+    value: ${{ steps.package.outputs.manifest }}
+  valid:
+    description: "Whether all skills passed validation"
+    value: ${{ steps.package.outputs.valid }}
+
+runs:
+  using: "composite"
+  steps:
+    - uses: oven-sh/setup-bun@v2
+    - id: package
+      shell: bash
+      run: bun run ${{ github.action_path }}/src/package.ts
+      env:
+        INPUT_SKILL_PATHS: ${{ inputs.skill-paths }}
+        INPUT_SKILLS_DIR: ${{ inputs.skills-dir }}
+        INPUT_OUTPUT_DIR: ${{ inputs.output-dir }}
+        INPUT_VALIDATE_ONLY: ${{ inputs.validate-only }}

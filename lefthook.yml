@@ -1,0 +1,9 @@
+pre-commit:
+  parallel: true
+  commands:
+    actionlint:
+      run: bun run lint:actions
+    markdownlint:
+      run: bun run lint:md
+    typecheck:
+      run: bun run typecheck
