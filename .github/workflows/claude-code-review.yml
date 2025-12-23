@@ -4,13 +4,19 @@ on:
   pull_request:
     types: [opened, synchronize]
 
+env:
+  # Codeowners and trusted bots allowed to trigger reviews
+  TRUSTED_ACTORS: >-
+    galligan,
+    claude[bot],
+    chatgpt-codex-connector[bot],
+    coderabbitai[bot],
+    graphite-app[bot],
+    copilot-pull-request-reviewer[bot],
+    copilot-swe-agent[bot]
+
 jobs:
   claude-review:
-    # Only run for PRs from codeowners or Claude/Codex bots
-    if: |
-      github.event.pull_request.user.login == 'galligan' ||
-      github.event.pull_request.user.login == 'claude[bot]' ||
-      github.event.pull_request.user.login == 'codex-bot[bot]'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -19,6 +25,15 @@ jobs:
       id-token: write
 
     steps:
+      - name: Check if actor is trusted
+        run: |
+          if [[ ! "$TRUSTED_ACTORS" == *"$ACTOR"* ]]; then
+            echo "::notice::Skipping review - $ACTOR is not a trusted actor"
+            exit 1
+          fi
+        env:
+          ACTOR: ${{ github.event.pull_request.user.login }}
+
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
@@ -40,4 +55,3 @@ jobs:
             Use the repository's CLAUDE.md and AGENTS.md for guidance on style and conventions.
 
           claude_args: '--allowed-tools "Bash(gh issue view:*),Bash(gh search:*),Bash(gh issue list:*),Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr list:*)"'
-

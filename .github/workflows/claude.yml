@@ -10,6 +10,17 @@ on:
   pull_request_review:
     types: [submitted]
 
+env:
+  # Codeowners and trusted bots allowed to invoke Claude
+  TRUSTED_ACTORS: >-
+    galligan,
+    claude[bot],
+    chatgpt-codex-connector[bot],
+    coderabbitai[bot],
+    graphite-app[bot],
+    copilot-pull-request-reviewer[bot],
+    copilot-swe-agent[bot]
+
 jobs:
   claude:
     if: |
@@ -35,10 +46,6 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-
-          # Restrict to codeowners and allow Claude/Codex bots
-          assignees: "galligan,claude[bot],codex-bot[bot]"
-
+          assignees: ${{ env.TRUSTED_ACTORS }}
           additional_permissions: |
             actions: read
-
