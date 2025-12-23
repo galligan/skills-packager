@@ -1,29 +1,46 @@
-# Skill Packager
+# Skills Packager
 
-GitHub Action that validates skill folders, packages each skill into a zip, and emits a manifest for downstream workflows.
+GitHub Action that validates and packages skill directories into distributable `.zip` files for Claude.ai, Claude Desktop, and compatible clients.
 
-## Goals
+## Features
 
-- Package skills into zips with SHA256 checksums
-- Emit a manifest JSON for releases or artifact uploads
-- Keep dependencies minimal and execution fast
+- **Zero-config operation** - Auto-discovers skills in your repo
+- **Plugin awareness** - Automatically detects `plugin.json` and groups skills by plugin
+- **GitHub releases** - Optionally creates releases with proper tagging
+- **SHA256 checksums** - Every zip includes integrity verification
+- **Manifest generation** - JSON manifest for downstream workflows
 
-## How It Works
+## Quick Start
 
-1. Determine skill directories (explicit paths or directory scan)
-2. Validate SKILL.md frontmatter
-3. Zip each skill directory
-4. Generate a manifest.json with metadata
-5. Emit outputs for GitHub Actions
+```yaml
+- uses: galligan/skills-packager@v1
+```
+
+That's it. The action scans `skills/` for `SKILL.md` files, validates and packages each skill.
+
+## Documentation
+
+| Doc | What it covers |
+|-----|----------------|
+| [docs/README.md](./docs/README.md) | Quick start and overview |
+| [docs/inputs-and-outputs.md](./docs/inputs-and-outputs.md) | All inputs, outputs, manifest format |
+| [docs/pipeline-patterns.md](./docs/pipeline-patterns.md) | CI/CD workflows, validation, releases |
+| [docs/monorepo-patterns.md](./docs/monorepo-patterns.md) | Plugin grouping, multi-skill repos |
+| [docs/troubleshooting.md](./docs/troubleshooting.md) | Common errors and solutions |
 
 ## Inputs
 
-| Name | Required | Default | Description |
-| --- | --- | --- | --- |
-| `skill-paths` | no | | Newline-separated list of skill directories or SKILL.md paths |
-| `skills-dir` | no | `skills` | Root directory to scan for skills |
-| `output-dir` | no | `dist` | Directory for zips and manifest |
-| `validate-only` | no | `false` | Validate only, skip packaging |
+| Name | Default | Description |
+| --- | --- | --- |
+| `skill-paths` | | Newline-separated list of skill directories |
+| `skills-dir` | `skills` | Root directory to scan for skills |
+| `output-dir` | `dist` | Directory for zips and manifest |
+| `validate-only` | `false` | Validate only, skip packaging |
+| `create-release` | `false` | Create GitHub releases for packaged skills |
+| `version` | | Explicit version override |
+| `release-prefix` | | Prefix for release tags |
+| `draft` | `false` | Create releases as drafts |
+| `skip-unchanged` | `false` | Skip skills that haven't changed |
 
 ## Outputs
 
@@ -32,117 +49,58 @@ GitHub Action that validates skill folders, packages each skill into a zip, and 
 | `packages` | JSON array of packaged skills with metadata |
 | `manifest` | Path to generated manifest.json |
 | `valid` | Whether all skills passed validation |
+| `groups` | JSON array of skill groups (grouped by plugin) |
+| `releases` | JSON array of created releases (when `create-release` is true) |
 
-## Usage
-
-### Package Only Changed Skills
+## Skill Frontmatter
 
 ```yaml
-name: Package Changed Skills
-on:
-  push:
-    paths:
-      - '**/SKILL.md'
-
-jobs:
-  package:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: dorny/paths-filter@v3
-        id: changes
-        with:
-          list-files: shell
-          filters: |
-            skills:
-              - '**/SKILL.md'
-
-      - uses: your-org/skills-packager@v1
-        if: steps.changes.outputs.skills == 'true'
-        with:
-          skill-paths: ${{ steps.changes.outputs.skills_files }}
-
-      - uses: actions/upload-artifact@v4
-        if: steps.changes.outputs.skills == 'true'
-        with:
-          name: skills
-          path: |
-            dist/*.zip
-            dist/manifest.json
+---
+name: my-skill
+description: What this skill does
+version: 1.0.0
+spec: 1
+---
 ```
 
-### Validate on PR, Package on Merge
+- `name` - Required, lowercase with hyphens
+- `description` - Required, brief description
+- `version` - Recommended, included in zip filename
+- `spec` - Optional, skill format version
+
+## Example: Package and Release
 
 ```yaml
-name: Skills CI
+name: Package Skills
 on:
-  pull_request:
-    paths:
-      - '**/SKILL.md'
   push:
     branches: [main]
     paths:
       - '**/SKILL.md'
 
 jobs:
-  validate:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: your-org/skills-packager@v1
-        with:
-          validate-only: 'true'
-
   package:
-    if: github.event_name == 'push'
-    needs: validate
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: your-org/skills-packager@v1
-        id: package
-      - uses: actions/upload-artifact@v4
+      - uses: galligan/skills-packager@v1
         with:
-          name: skills
-          path: dist/*.zip
+          create-release: 'true'
 ```
 
-### Package Everything
+## Requirements
 
-```yaml
-- uses: your-org/skills-packager@v1
-  with:
-    skills-dir: 'skills'
-```
-
-## Skill Frontmatter
-
-Required fields:
-
-```yaml
----
-name: frontend-design
-description: Create web interfaces quickly
-version: 1.2.0
-spec: 1
----
-```
-
-Notes:
-
-- `name` must be lowercase with hyphens
-- `version` is optional but recommended
-- Frontmatter parsing expects simple `key: value` lines
+- `zip` command available on runner (present on `ubuntu-latest`)
+- Bun runtime (automatically installed via `oven-sh/setup-bun`)
 
 ## Development
 
 ```bash
 bun install
 bun run lint
+bun run typecheck
 ```
 
-## Requirements
+## License
 
-- `zip` available on the runner (present on ubuntu-latest)
-- Bun runtime via `oven-sh/setup-bun`
+MIT

@@ -20,6 +20,24 @@ inputs:
     description: "Only validate skills, do not package"
     required: false
     default: "false"
+  create-release:
+    description: "Create GitHub releases for packaged skills"
+    required: false
+    default: "false"
+  version:
+    description: "Explicit version override (skips plugin.json lookup)"
+    required: false
+  release-prefix:
+    description: "Prefix for release tags (e.g., 'my-plugin-')"
+    required: false
+  draft:
+    description: "Create releases as drafts"
+    required: false
+    default: "false"
+  skip-unchanged:
+    description: "Skip skills that haven't changed since last release"
+    required: false
+    default: "false"
 
 outputs:
   packages:
@@ -31,6 +49,12 @@ outputs:
   valid:
     description: "Whether all skills passed validation"
     value: ${{ steps.package.outputs.valid }}
+  groups:
+    description: "JSON array of skill groups (grouped by plugin)"
+    value: ${{ steps.package.outputs.groups }}
+  releases:
+    description: "JSON array of created releases (when create-release is true)"
+    value: ${{ steps.package.outputs.releases }}
 
 runs:
   using: "composite"
@@ -44,3 +68,8 @@ runs:
         INPUT_SKILLS_DIR: ${{ inputs.skills-dir }}
         INPUT_OUTPUT_DIR: ${{ inputs.output-dir }}
         INPUT_VALIDATE_ONLY: ${{ inputs.validate-only }}
+        INPUT_CREATE_RELEASE: ${{ inputs.create-release }}
+        INPUT_VERSION: ${{ inputs.version }}
+        INPUT_RELEASE_PREFIX: ${{ inputs.release-prefix }}
+        INPUT_DRAFT: ${{ inputs.draft }}
+        INPUT_SKIP_UNCHANGED: ${{ inputs.skip-unchanged }}

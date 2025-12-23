@@ -3,6 +3,12 @@ import { dirname, join, resolve } from "path";
 import { appendFile, mkdir } from "fs/promises";
 import { parseFrontmatter, validateSkill } from "./validate";
 import { writeManifest, type PackageResult } from "./manifest";
+import { findPluginForSkill, groupSkillsByPlugin } from "./plugin";
+import { createReleasesFromGroups } from "./release";
+
+interface ExtendedPackageResult extends PackageResult {
+  pluginPath?: string;
+}
 
 async function computeSha256(filePath: string): Promise<string> {
   const file = Bun.file(filePath);
@@ -15,7 +21,7 @@ async function computeSha256(filePath: string): Promise<string> {
 async function packageSkill(
   skillPath: string,
   outputDir: string,
-): Promise<PackageResult | null> {
+): Promise<ExtendedPackageResult | null> {
   const validation = await validateSkill(skillPath);
 
   for (const warning of validation.warnings) {
@@ -60,6 +66,9 @@ async function packageSkill(
   const sizeKb = (size / 1024).toFixed(1);
   console.log(`Packaged ${meta.name}${displayVersion} -> ${filename} (${sizeKb}KB)`);
 
+  // Find parent plugin if any
+  const plugin = await findPluginForSkill(skillPath);
+
   return {
     name: meta.name,
     version: meta.version,
@@ -67,6 +76,7 @@ async function packageSkill(
     path: outPath,
     size,
     sha256,
+    pluginPath: plugin?.path,
   };
 }
 
@@ -111,6 +121,9 @@ async function main() {
   const skillsDir = process.env.INPUT_SKILLS_DIR || "skills";
   const outputDir = process.env.INPUT_OUTPUT_DIR || "dist";
   const validateOnly = process.env.INPUT_VALIDATE_ONLY === "true";
+  const createRelease = process.env.INPUT_CREATE_RELEASE === "true";
+  const releasePrefix = process.env.INPUT_RELEASE_PREFIX || "";
+  const draft = process.env.INPUT_DRAFT === "true";
 
   await mkdir(outputDir, { recursive: true });
 
@@ -154,20 +167,48 @@ async function main() {
     return;
   }
 
-  const results: PackageResult[] = [];
+  const results: ExtendedPackageResult[] = [];
 
   for (const path of skillPaths) {
     const result = await packageSkill(path, outputDir);
     if (result) results.push(result);
   }
 
-  const manifestPath = await writeManifest(outputDir, results);
+  // Group skills by plugin
+  const groups = await groupSkillsByPlugin(results);
 
-  await writeOutput(`packages=${JSON.stringify(results)}`);
+  // Write manifest with groups
+  const manifestPath = await writeManifest(outputDir, results, groups);
+
+  // Output flat packages (without pluginPath for backward compat)
+  const flatResults: PackageResult[] = results.map(
+    ({ pluginPath: _, ...rest }) => rest,
+  );
+
+  await writeOutput(`packages=${JSON.stringify(flatResults)}`);
   await writeOutput(`manifest=${manifestPath}`);
   await writeOutput(`valid=${results.length === skillPaths.length}`);
+  await writeOutput(`groups=${JSON.stringify(groups)}`);
 
   console.log(`Packaged ${results.length}/${skillPaths.length} skill(s)`);
+
+  // Log plugin grouping info
+  const pluginCount = groups.filter((g) => g.plugin).length;
+  const standaloneCount = groups.filter((g) => !g.plugin).length;
+  if (pluginCount > 0 || standaloneCount > 0) {
+    console.log(`Grouped into ${pluginCount} plugin(s), ${standaloneCount} standalone skill(s)`);
+  }
+
+  // Create releases if requested
+  if (createRelease && results.length > 0) {
+    console.log("Creating GitHub releases...");
+    const releases = await createReleasesFromGroups(groups, manifestPath, {
+      draft,
+      prefix: releasePrefix,
+    });
+    await writeOutput(`releases=${JSON.stringify(releases)}`);
+    console.log(`Created ${releases.length} release(s)`);
+  }
 
   if (results.length < skillPaths.length) {
     process.exit(1);
