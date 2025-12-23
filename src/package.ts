@@ -1,5 +1,5 @@
 import { Glob } from "bun";
-import { dirname, join } from "path";
+import { dirname, join, resolve } from "path";
 import { appendFile, mkdir } from "fs/promises";
 import { parseFrontmatter, validateSkill } from "./validate";
 import { writeManifest, type PackageResult } from "./manifest";
@@ -40,7 +40,7 @@ async function packageSkill(
 
   const versionSuffix = meta.version ? `-v${meta.version}` : "";
   const filename = `${meta.name}${versionSuffix}.zip`;
-  const outPath = join(outputDir, filename);
+  const outPath = resolve(outputDir, filename);
 
   const proc = Bun.spawn(["zip", "-r", "-q", outPath, "."], {
     cwd: skillPath,
