@@ -1,0 +1,21 @@
+# macOS
+.DS_Store
+
+# Node/Bun
+node_modules/
+.bun/
+
+# Logs
+*.log
+
+# Environment files
+.env
+.env.*
+
+# Coverage
+coverage/
+
+# Skill packager outputs
+dist/
+manifest.json
+*.zip
