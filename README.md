@@ -1,97 +1,79 @@
 # Skills Packager
 
-GitHub Action that validates and packages skill directories into distributable `.zip` files for Claude.ai, Claude Desktop, and compatible clients.
-
-## Features
-
-- **Zero-config operation** - Auto-discovers skills in your repo
-- **Plugin awareness** - Automatically detects `plugin.json` and groups skills by plugin
-- **GitHub releases** - Optionally creates releases with proper tagging
-- **SHA256 checksums** - Every zip includes integrity verification
-- **Manifest generation** - JSON manifest for downstream workflows
-
-## Quick Start
+**Claude.ai requires zips to load skills.** This action builds them for you.
 
 ```yaml
 - uses: galligan/skills-packager@v1
 ```
 
-That's it. The action scans `skills/` for `SKILL.md` files, validates and packages each skill.
+Write your skills in markdown. Push to GitHub. Get installable zips—validated, checksummed, and ready to drag into Claude.
 
-## Documentation
+## What You Get
 
-| Doc | What it covers |
-|-----|----------------|
-| [docs/README.md](./docs/README.md) | Quick start and overview |
-| [docs/inputs-and-outputs.md](./docs/inputs-and-outputs.md) | All inputs, outputs, manifest format |
-| [docs/pipeline-patterns.md](./docs/pipeline-patterns.md) | CI/CD workflows, validation, releases |
-| [docs/monorepo-patterns.md](./docs/monorepo-patterns.md) | Plugin grouping, multi-skill repos |
-| [docs/troubleshooting.md](./docs/troubleshooting.md) | Common errors and solutions |
+- **Zero config** — Drop it in, it works. Scans `skills/` automatically.
+- **Plugin-aware** — Got a `plugin.json`? Skills underneath get grouped together.
+- **Releases built-in** — One flag to create GitHub releases with proper tags.
+- **Integrity baked in** — SHA256 checksums for every zip.
 
-## Inputs
+## Your First Skill
 
-| Name | Default | Description |
-| --- | --- | --- |
-| `skill-paths` | | Newline-separated list of skill directories |
-| `skills-dir` | `skills` | Root directory to scan for skills |
-| `output-dir` | `dist` | Directory for zips and manifest |
-| `validate-only` | `false` | Validate only, skip packaging |
-| `create-release` | `false` | Create GitHub releases for packaged skills |
-| `version` | | Explicit version override |
-| `release-prefix` | | Prefix for release tags |
-| `draft` | `false` | Create releases as drafts |
-| `skip-unchanged` | `false` | Skip skills that haven't changed |
-
-## Outputs
-
-| Name | Description |
-| --- | --- |
-| `packages` | JSON array of packaged skills with metadata |
-| `manifest` | Path to generated manifest.json |
-| `valid` | Whether all skills passed validation |
-| `groups` | JSON array of skill groups (grouped by plugin) |
-| `releases` | JSON array of created releases (when `create-release` is true) |
-
-## Skill Frontmatter
+Create `skills/my-skill/SKILL.md`:
 
 ```yaml
 ---
 name: my-skill
 description: What this skill does
 version: 1.0.0
-spec: 1
 ---
+
+Your skill content here...
 ```
 
-- `name` - Required, lowercase with hyphens
-- `description` - Required, brief description
-- `version` - Recommended, included in zip filename
-- `spec` - Optional, skill format version
+Push. Done.
 
-## Example: Package and Release
+## Going Further
+
+| Doc | What's inside |
+|-----|---------------|
+| [Quick Start](./docs/README.md) | Get running in 2 minutes |
+| [Inputs & Outputs](./docs/inputs-and-outputs.md) | Every option, output, and manifest field |
+| [Pipeline Patterns](./docs/pipeline-patterns.md) | CI/CD recipes for real workflows |
+| [Monorepo Patterns](./docs/monorepo-patterns.md) | Multi-skill repos and plugin grouping |
+| [Troubleshooting](./docs/troubleshooting.md) | When things don't work |
+
+## Common Options
+
+| Input | Default | What it does |
+|-------|---------|--------------|
+| `skills-dir` | `skills` | Where to look for skills |
+| `validate-only` | `false` | Check skills without packaging |
+| `create-release` | `false` | Publish GitHub releases |
+
+See [all inputs](./docs/inputs-and-outputs.md) for the complete list.
+
+## Example: Validate PRs, Release on Merge
 
 ```yaml
-name: Package Skills
+name: Skills
 on:
+  pull_request:
+    paths: ['**/SKILL.md']
   push:
     branches: [main]
-    paths:
-      - '**/SKILL.md'
+    paths: ['**/SKILL.md']
 
 jobs:
-  package:
+  skills:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
       - uses: galligan/skills-packager@v1
         with:
-          create-release: 'true'
+          validate-only: ${{ github.event_name == 'pull_request' }}
+          create-release: ${{ github.event_name == 'push' }}
 ```
-
-## Requirements
-
-- `zip` command available on runner (present on `ubuntu-latest`)
-- Bun runtime (automatically installed via `oven-sh/setup-bun`)
 
 ## Development
 
