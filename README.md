@@ -1,19 +1,20 @@
 # Skills Packager
 
-**Claude.ai requires zips to load skills.** This action builds them for you.
+**Turn your Claude skills into installable zips—automatically, on every push.**
+
+## What Are Skills?
+
+Claude loads skills from `.zip` files. Each skill is a directory with a `SKILL.md` file that defines what Claude can do. This action validates your skill definitions and packages them into distributable zips—ready to drag into Claude.ai, Claude Desktop, or any compatible client.
+
+## Quick Start
 
 ```yaml
 - uses: galligan/skills-packager@v1
 ```
 
-Write your skills in markdown. Push to GitHub. Get installable zips—validated, checksummed, and ready to drag into Claude.
+That's it. The action scans `skills/`, validates your SKILL.md frontmatter, and outputs zips with SHA256 checksums.
 
-## What You Get
-
-- **Zero config** — Drop it in, it works. Scans `skills/` automatically.
-- **Plugin-aware** — Got a `plugin.json`? Skills underneath get grouped together.
-- **Releases built-in** — One flag to create GitHub releases with proper tags.
-- **Integrity baked in** — SHA256 checksums for every zip.
+**Important:** The action validates and packages—it doesn't execute skills or define what they do inside Claude. It's infrastructure for distribution, not runtime.
 
 ## Your First Skill
 
@@ -29,29 +30,32 @@ version: 1.0.0
 Your skill content here...
 ```
 
-Push. Done.
+Push to GitHub. Get `my-skill-v1.0.0.zip` in your workflow artifacts or releases.
 
-## Going Further
+## Benefits
 
-| Doc | What's inside |
-|-----|---------------|
-| [Quick Start](./docs/README.md) | Get running in 2 minutes |
-| [Inputs & Outputs](./docs/inputs-and-outputs.md) | Every option, output, and manifest field |
-| [Pipeline Patterns](./docs/pipeline-patterns.md) | CI/CD recipes for real workflows |
-| [Monorepo Patterns](./docs/monorepo-patterns.md) | Multi-skill repos and plugin grouping |
-| [Troubleshooting](./docs/troubleshooting.md) | When things don't work |
+| Feature | What You Get |
+|---------|--------------|
+| **Instant distribution** | Zips ready to share or upload to Claude |
+| **Frontmatter validation** | Catch invalid skill definitions before packaging |
+| **SHA256 checksums** | Every zip gets a checksum for integrity verification |
+| **Optional releases** | One flag to publish GitHub releases with proper tags |
+| **Plugin grouping** | Got a `plugin.json`? Skills underneath get grouped together |
 
 ## Common Options
 
 | Input | Default | What it does |
 |-------|---------|--------------|
 | `skills-dir` | `skills` | Where to look for skills |
+| `output-dir` | `dist` | Where to write zips and manifest |
 | `validate-only` | `false` | Check skills without packaging |
-| `create-release` | `false` | Publish GitHub releases |
+| `create-release` | `false` | Publish GitHub releases with skill zips |
 
-See [all inputs](./docs/inputs-and-outputs.md) for the complete list.
+See [reference.md](./docs/reference.md) for all inputs, outputs, and manifest schema.
 
-## Example: Validate PRs, Release on Merge
+## Example Workflow
+
+Validate on PRs, release on merge to main:
 
 ```yaml
 name: Skills
@@ -74,6 +78,15 @@ jobs:
           validate-only: ${{ github.event_name == 'pull_request' }}
           create-release: ${{ github.event_name == 'push' }}
 ```
+
+## Documentation
+
+| Doc | What's inside |
+|-----|---------------|
+| [Reference](./docs/reference.md) | All inputs, outputs, and manifest fields |
+| [Pipeline Patterns](./docs/pipeline-patterns.md) | CI/CD recipes for real workflows |
+| [Monorepo Patterns](./docs/monorepo-patterns.md) | Multi-skill repos and plugin grouping |
+| [Troubleshooting](./docs/troubleshooting.md) | When things don't work |
 
 ## Development
 
