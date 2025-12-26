@@ -83,9 +83,9 @@ jobs:
 
 | Doc | What's inside |
 |-----|---------------|
+| [Setup Guide](./docs/setup.md) | Step-by-step setup for any repo |
 | [Reference](./docs/reference.md) | All inputs, outputs, and manifest fields |
-| [Pipeline Patterns](./docs/pipeline-patterns.md) | CI/CD recipes for real workflows |
-| [Monorepo Patterns](./docs/monorepo-patterns.md) | Multi-skill repos and plugin grouping |
+| [Patterns](./docs/patterns.md) | CI/CD workflows and monorepo setups |
 | [Troubleshooting](./docs/troubleshooting.md) | When things don't work |
 
 ## Development

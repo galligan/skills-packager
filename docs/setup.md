@@ -200,4 +200,4 @@ skills/
 
 Skills under `my-plugin/` will be grouped together in the manifest and released as `my-plugin-v2.0.0`.
 
-See [Monorepo Patterns](./monorepo-patterns.md) for details.
+See [Patterns](./patterns.md) for more details.
