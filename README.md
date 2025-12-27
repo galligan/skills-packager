@@ -1,6 +1,6 @@
 # Skills Packager
 
-**Claude.ai requires zips to load skills.** This action builds them for you.
+[Claude.ai](https://claude.ai) requires Skills[^1][^2] to be in a [zip format](https://support.anthropic.com/en/articles/12512180-using-skills-in-claude). This action builds them for you.
 
 ```yaml
 - uses: galligan/skills-packager@v1
@@ -31,16 +31,6 @@ Your skill content here...
 
 Push. Done.
 
-## Going Further
-
-| Doc | What's inside |
-|-----|---------------|
-| [Quick Start](./docs/README.md) | Get running in 2 minutes |
-| [Inputs & Outputs](./docs/inputs-and-outputs.md) | Every option, output, and manifest field |
-| [Pipeline Patterns](./docs/pipeline-patterns.md) | CI/CD recipes for real workflows |
-| [Monorepo Patterns](./docs/monorepo-patterns.md) | Multi-skill repos and plugin grouping |
-| [Troubleshooting](./docs/troubleshooting.md) | When things don't work |
-
 ## Common Options
 
 | Input | Default | What it does |
@@ -49,7 +39,7 @@ Push. Done.
 | `validate-only` | `false` | Check skills without packaging |
 | `create-release` | `false` | Publish GitHub releases |
 
-See [all inputs](./docs/inputs-and-outputs.md) for the complete list.
+See [Reference](./docs/reference.md) for the complete list.
 
 ## Example: Validate PRs, Release on Merge
 
@@ -75,6 +65,15 @@ jobs:
           create-release: ${{ github.event_name == 'push' }}
 ```
 
+## Documentation
+
+| Doc | What's inside |
+|-----|---------------|
+| [Setup Guide](./docs/setup.md) | Step-by-step setup for any repo |
+| [Reference](./docs/reference.md) | All inputs, outputs, and manifest fields |
+| [Patterns](./docs/patterns.md) | CI/CD workflows and monorepo setups |
+| [Troubleshooting](./docs/troubleshooting.md) | When things don't work |
+
 ## Development
 
 ```bash
@@ -86,3 +85,6 @@ bun run typecheck
 ## License
 
 MIT
+
+[^1]: <https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/skills>
+[^2]: <https://agentskills.io>
