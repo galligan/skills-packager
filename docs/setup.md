@@ -173,7 +173,6 @@ If releases don't appear:
 The action includes all files in the skill directory:
 
 - Move unrelated files outside the skill directory
-- Use `.gitignore` patterns (action respects git-ignored files)
 - Each skill should be self-contained in its directory
 
 ## Plugin Grouping (Advanced)
