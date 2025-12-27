@@ -1,6 +1,6 @@
 # Skills Packager
 
-**Claude.ai requires zips to upload [skills](https://agentskills.io).** This action builds them for you.
+[Claude.ai](https://claude.ai) requires Skills[^1][^2] to be in a [zip format](https://support.anthropic.com/en/articles/12512180-using-skills-in-claude). This action builds them for you.
 
 ```yaml
 - uses: galligan/skills-packager@v1
@@ -85,3 +85,6 @@ bun run typecheck
 ## License
 
 MIT
+
+[^1]: <https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/skills>
+[^2]: <https://agentskills.io>
