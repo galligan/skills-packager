@@ -1,20 +1,19 @@
 # Skills Packager
 
-**Turn your Claude skills into installable zips—automatically, on every push.**
-
-## What Are Skills?
-
-Claude loads skills from `.zip` files. Each skill is a directory with a `SKILL.md` file that defines what Claude can do. This action validates your skill definitions and packages them into distributable zips—ready to drag into Claude.ai, Claude Desktop, or any compatible client.
-
-## Quick Start
+**Claude.ai requires zips to upload [skills](https://agentskills.io).** This action builds them for you.
 
 ```yaml
 - uses: galligan/skills-packager@v1
 ```
 
-That's it. The action scans `skills/`, validates your SKILL.md frontmatter, and outputs zips with SHA256 checksums.
+Write your skills in markdown. Push to GitHub. Get installable zips—validated, checksummed, and ready to drag into Claude.
 
-**Important:** The action validates and packages—it doesn't execute skills or define what they do inside Claude. It's infrastructure for distribution, not runtime.
+## What You Get
+
+- **Zero config** — Drop it in, it works. Scans `skills/` automatically.
+- **Plugin-aware** — Got a `plugin.json`? Skills underneath get grouped together.
+- **Releases built-in** — One flag to create GitHub releases with proper tags.
+- **Integrity baked in** — SHA256 checksums for every zip.
 
 ## Your First Skill
 
@@ -30,32 +29,19 @@ version: 1.0.0
 Your skill content here...
 ```
 
-Push to GitHub. Get `my-skill-v1.0.0.zip` in your workflow artifacts or releases.
-
-## Benefits
-
-| Feature | What You Get |
-|---------|--------------|
-| **Instant distribution** | Zips ready to share or upload to Claude |
-| **Frontmatter validation** | Catch invalid skill definitions before packaging |
-| **SHA256 checksums** | Every zip gets a checksum for integrity verification |
-| **Optional releases** | One flag to publish GitHub releases with proper tags |
-| **Plugin grouping** | Got a `plugin.json`? Skills underneath get grouped together |
+Push. Done.
 
 ## Common Options
 
 | Input | Default | What it does |
 |-------|---------|--------------|
 | `skills-dir` | `skills` | Where to look for skills |
-| `output-dir` | `dist` | Where to write zips and manifest |
 | `validate-only` | `false` | Check skills without packaging |
-| `create-release` | `false` | Publish GitHub releases with skill zips |
+| `create-release` | `false` | Publish GitHub releases |
 
-See [reference.md](./docs/reference.md) for all inputs, outputs, and manifest schema.
+See [Reference](./docs/reference.md) for the complete list.
 
-## Example Workflow
-
-Validate on PRs, release on merge to main:
+## Example: Validate PRs, Release on Merge
 
 ```yaml
 name: Skills
