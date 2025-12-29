@@ -127,15 +127,46 @@ Create releases as drafts for manual review before publishing:
     draft: true  # Creates draft releases
 ```
 
-### Skip Unchanged Skills
+### Change Detection
 
-Avoid re-releasing skills that haven't changed:
+By default, the action automatically detects which skills have changed and only packages those:
+
+- **In PRs**: Compares against the PR's base branch
+- **On push with tags**: Compares against the most recent tag
+- **First run (no tags)**: Packages everything
+
+No configuration needed—it just works.
+
+#### Force Full Build
+
+To package all skills regardless of changes:
 
 ```yaml
 - uses: galligan/skills-packager@v1
   with:
-    create-release: true
-    skip-unchanged: true  # Only release modified skills
+    force-all: true  # Package everything
+```
+
+#### Custom Baseline
+
+To compare against a specific ref:
+
+```yaml
+- uses: galligan/skills-packager@v1
+  with:
+    since: v1.0.0  # Compare against this tag/branch/SHA
+```
+
+#### Explicit Paths (Power Users)
+
+For fine-grained control, you can still specify exact paths:
+
+```yaml
+- uses: galligan/skills-packager@v1
+  with:
+    skill-paths: |
+      skills/changed-skill-1
+      skills/changed-skill-2
 ```
 
 ### Validation Only

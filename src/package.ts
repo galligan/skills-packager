@@ -5,6 +5,12 @@ import { parseFrontmatter, validateSkill } from "./validate";
 import { writeManifest, type PackageResult } from "./manifest";
 import { findPluginForSkill, groupSkillsByPlugin } from "./plugin";
 import { createReleasesFromGroups } from "./release";
+import {
+  detectBaseline,
+  ensureRefAvailable,
+  getChangedFiles,
+  filterChangedSkills,
+} from "./changes";
 
 interface ExtendedPackageResult extends PackageResult {
   pluginPath?: string;
@@ -124,23 +130,52 @@ async function main() {
   const createRelease = process.env.INPUT_CREATE_RELEASE === "true";
   const releasePrefix = process.env.INPUT_RELEASE_PREFIX || "";
   const draft = process.env.INPUT_DRAFT === "true";
+  const forceAll = process.env.INPUT_FORCE_ALL === "true";
+  const sinceRef = process.env.INPUT_SINCE;
 
   await mkdir(outputDir, { recursive: true });
 
   let skillPaths: string[];
 
   if (skillPathsRaw && skillPathsRaw.trim().length > 0) {
+    // Explicit paths provided - use those
     skillPaths = normalizeSkillPaths(skillPathsRaw);
-  } else {
+    console.log(`Using ${skillPaths.length} explicitly provided skill path(s)`);
+  } else if (forceAll) {
+    // Force all - discover and package everything
     skillPaths = await discoverSkillPaths(skillsDir);
+    console.log(`Force-all enabled. Packaging all ${skillPaths.length} skill(s).`);
+  } else {
+    // Smart change detection (default)
+    const allSkills = await discoverSkillPaths(skillsDir);
+    const baseline = sinceRef || (await detectBaseline());
+
+    if (!baseline) {
+      console.log(
+        `No previous release found. Packaging all ${allSkills.length} skill(s).`,
+      );
+      skillPaths = allSkills;
+    } else {
+      await ensureRefAvailable(baseline);
+      const changedFiles = await getChangedFiles(baseline);
+      skillPaths = filterChangedSkills(allSkills, changedFiles);
+
+      console.log(`Comparing against ${baseline}`);
+      console.log(
+        `Detected ${skillPaths.length}/${allSkills.length} changed skill(s)`,
+      );
+      if (skillPaths.length > 0) {
+        console.log(
+          `Changed: ${skillPaths.map((p) => p.split("/").pop()).join(", ")}`,
+        );
+      }
+    }
   }
 
   if (skillPaths.length === 0) {
     console.log("No skills found to process");
     return;
   }
-
-  console.log(`Found ${skillPaths.length} skill(s) to process`);
 
   if (validateOnly) {
     let allValid = true;

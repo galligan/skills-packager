@@ -34,10 +34,13 @@ inputs:
     description: "Create releases as drafts"
     required: false
     default: "false"
-  skip-unchanged:
-    description: "Skip skills that haven't changed since last release"
+  force-all:
+    description: "Package all skills regardless of changes"
     required: false
     default: "false"
+  since:
+    description: "Git ref to compare against (tag, branch, or SHA). Auto-detected if not provided."
+    required: false
 
 outputs:
   packages:
@@ -72,4 +75,5 @@ runs:
         INPUT_VERSION: ${{ inputs.version }}
         INPUT_RELEASE_PREFIX: ${{ inputs.release-prefix }}
         INPUT_DRAFT: ${{ inputs.draft }}
-        INPUT_SKIP_UNCHANGED: ${{ inputs.skip-unchanged }}
+        INPUT_FORCE_ALL: ${{ inputs.force-all }}
+        INPUT_SINCE: ${{ inputs.since }}
