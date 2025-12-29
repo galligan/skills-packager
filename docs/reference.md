@@ -14,7 +14,45 @@ Complete reference for action inputs, outputs, and manifest format.
 | `version` | | Explicit version override |
 | `release-prefix` | | Prefix for release tags |
 | `draft` | `false` | Create releases as drafts |
-| `skip-unchanged` | `false` | Skip unchanged skills |
+| `force-all` | `false` | Package all skills regardless of changes |
+| `since` | auto-detect | Git ref to compare against (tag, branch, or SHA) |
+
+### Change Detection Behavior
+
+The action automatically detects which skills have changed to avoid unnecessary packaging:
+
+**Priority Order**:
+
+1. **Explicit paths** (`skill-paths` provided) → Uses those paths exactly
+2. **Force all** (`force-all: true`) → Packages everything
+3. **Auto-detect** (default) → Packages only changed skills
+
+**Auto-Detection Logic**:
+
+| Context | Baseline | Behavior |
+|---------|----------|----------|
+| Pull request | PR base branch | Compares current HEAD against base |
+| Push with tags | Most recent tag | Compares current HEAD against latest tag |
+| First run (no tags) | None | Packages all skills (full build) |
+
+**Custom Baseline**:
+
+Use `since` to specify a custom comparison point:
+
+```yaml
+since: v1.0.0        # Compare against tag
+since: main          # Compare against branch
+since: abc123def     # Compare against specific commit SHA
+```
+
+**What Counts as Changed**:
+
+A skill is considered changed if any file in its directory (or subdirectories) has been modified since the baseline ref. This includes:
+
+- SKILL.md frontmatter or content
+- Helper files (e.g., `.ts`, `.js`)
+- Assets or examples
+- Any other files in the skill directory
 
 ## Outputs
 

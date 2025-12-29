@@ -11,6 +11,7 @@ Write your skills in markdown. Push to GitHub. Get installable zips—validated,
 ## What You Get
 
 - **Zero config** — Drop it in, it works. Scans `**/skills/` automatically.
+- **Smart detection** — Only packages changed skills. No paths-filter needed.
 - **Plugin-aware** — Got a `plugin.json`? Skills underneath get grouped together.
 - **Releases built-in** — One flag to create GitHub releases with proper tags.
 - **Integrity baked in** — SHA256 checksums for every zip.
@@ -38,6 +39,8 @@ Push. Done.
 | `skills-dir` | `skills` | Where to look for skills |
 | `validate-only` | `false` | Check skills without packaging |
 | `create-release` | `false` | Publish GitHub releases |
+| `force-all` | `false` | Package all skills, skip change detection |
+| `since` | auto | Git ref to compare against (tag, branch, or SHA) |
 
 See [Reference](./docs/reference.md) for the complete list.
 
