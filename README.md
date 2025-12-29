@@ -1,6 +1,6 @@
 # Skills Packager
 
-[Claude.ai](https://claude.ai) requires Skills[^1][^2] to be in a [zip format](https://support.anthropic.com/en/articles/12512180-using-skills-in-claude). This action builds them for you.
+[Claude.ai](https://claude.ai) requires [Skills](https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/skills) to be in a [zip format](https://support.anthropic.com/en/articles/12512180-using-skills-in-claude). This action builds them for you. [^1]
 
 ```yaml
 - uses: galligan/skills-packager@v1
@@ -10,7 +10,7 @@ Write your skills in markdown. Push to GitHub. Get installable zips—validated,
 
 ## What You Get
 
-- **Zero config** — Drop it in, it works. Scans `skills/` automatically.
+- **Zero config** — Drop it in, it works. Scans `**/skills/` automatically.
 - **Plugin-aware** — Got a `plugin.json`? Skills underneath get grouped together.
 - **Releases built-in** — One flag to create GitHub releases with proper tags.
 - **Integrity baked in** — SHA256 checksums for every zip.
@@ -86,5 +86,4 @@ bun run typecheck
 
 MIT
 
-[^1]: <https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/skills>
-[^2]: <https://agentskills.io>
+[^1]: skills-packager also supports non-Claude [Agent Skills](https://agentskills.io)
